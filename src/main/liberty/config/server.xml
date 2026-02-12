@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<server description="CSV Viewer Server">
+
+    <!-- Enable features -->
+    <featureManager>
+        <feature>servlet-6.0</feature>
+        <feature>restfulWS-3.1</feature>
+        <feature>jsonb-3.0</feature>
+        <feature>jsonp-2.1</feature>
+        <feature>cdi-4.0</feature>
+        <feature>mpConfig-3.1</feature>
+    </featureManager>
+
+    <!-- HTTP endpoint configuration -->
+    <httpEndpoint id="defaultHttpEndpoint"
+                  httpPort="${http.port}"
+                  httpsPort="${https.port}"
+                  host="*">
+        <tcpOptions soReuseAddr="true"/>
+    </httpEndpoint>
+
+    <!-- Web application configuration -->
+    <webApplication id="csv-viewer" 
+                    location="csv-viewer.war" 
+                    contextRoot="/">
+        <classloader delegation="parentLast"/>
+    </webApplication>
+
+    <!-- Logging configuration -->
+    <logging traceSpecification="*=info:com.ibm.csvviewer.*=all"
+             maxFileSize="20"
+             maxFiles="10"
+             consoleLogLevel="INFO"/>
+
+    <!-- Application security (basic for now) -->
+    <applicationManager autoExpand="true"/>
+
+    <!-- File upload configuration -->
+    <httpSession cookieHttpOnly="true" cookieSecure="false"/>
+    
+    <!-- CORS configuration for REST APIs -->
+    <cors domain="/"
+          allowedOrigins="*"
+          allowedMethods="GET, POST, PUT, DELETE, OPTIONS"
+          allowedHeaders="*"
+          allowCredentials="true"
+          maxAge="3600"/>
+
+</server>
+
+<!-- Made with Bob -->

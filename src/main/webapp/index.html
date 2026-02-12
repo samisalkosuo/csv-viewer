@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Viewer</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 CSV Viewer</h1>
+            <p class="subtitle">Upload and analyze CSV files with ease</p>
+        </header>
+
+        <!-- Upload Section -->
+        <section id="upload-section" class="card">
+            <h2>Upload CSV File</h2>
+            <div class="upload-area" id="upload-area">
+                <div class="upload-icon">📁</div>
+                <p>Drag and drop your CSV file here or click to browse</p>
+                <input type="file" id="file-input" accept=".csv" hidden>
+                <button id="browse-button" class="btn btn-primary">Browse Files</button>
+            </div>
+            <div id="upload-progress" class="upload-progress" style="display: none;">
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill"></div>
+                </div>
+                <p id="progress-text">Uploading...</p>
+            </div>
+        </section>
+
+        <!-- File List Section -->
+        <section id="file-list-section" class="card" style="display: none;">
+            <h2>Uploaded Files</h2>
+            <div id="file-list" class="file-list"></div>
+        </section>
+
+        <!-- CSV Viewer Section -->
+        <section id="viewer-section" class="card" style="display: none;">
+            <div class="viewer-header">
+                <div class="viewer-title">
+                    <h2 id="current-file-name">File Name</h2>
+                    <div class="file-info">
+                        <span id="file-stats"></span>
+                    </div>
+                </div>
+                <div class="viewer-actions">
+                    <button id="download-btn" class="btn btn-secondary">⬇️ Download Filtered</button>
+                    <button id="close-viewer-btn" class="btn btn-secondary">✖️ Close</button>
+                </div>
+            </div>
+
+            <!-- Search and Filter Controls -->
+            <div class="search-controls">
+                <div class="search-row">
+                    <input type="text" id="global-search" class="search-input" placeholder="🔍 Search all columns...">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="inverse-search">
+                        Inverse Search (exclude matches)
+                    </label>
+                </div>
+                <div id="column-search-container" class="column-search-container"></div>
+            </div>
+
+            <!-- Data Grid -->
+            <div class="table-container">
+                <table id="csv-table" class="csv-table">
+                    <thead id="table-header"></thead>
+                    <tbody id="table-body"></tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Controls -->
+            <div class="pagination-controls">
+                <div class="page-size-selector">
+                    <label>Rows per page:</label>
+                    <select id="page-size-select">
+                        <option value="10">10</option>
+                        <option value="25" selected>25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+                <div class="pagination-info">
+                    <span id="pagination-info-text">Showing 0-0 of 0 rows</span>
+                </div>
+                <div class="pagination-buttons">
+                    <button id="first-page-btn" class="btn btn-small">⏮️ First</button>
+                    <button id="prev-page-btn" class="btn btn-small">◀️ Prev</button>
+                    <span id="page-info">Page 1 of 1</span>
+                    <button id="next-page-btn" class="btn btn-small">Next ▶️</button>
+                    <button id="last-page-btn" class="btn btn-small">Last ⏭️</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Error Message -->
+        <div id="error-message" class="error-message" style="display: none;"></div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

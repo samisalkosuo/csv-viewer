@@ -1,0 +1,43 @@
+# Maven build artifacts
+target/
+*.war
+*.jar
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+.settings/
+.project
+.classpath
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+README.md
+QUICKSTART.md
+LICENSE
+
+# Test files
+src/test/
+
+# Sample data (not needed in container)
+sample-data/
+
+# Runtime data (will be created in container)
+data/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~

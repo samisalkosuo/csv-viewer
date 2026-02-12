@@ -1,0 +1,6 @@
+ID;Name;Email;Age;City;Country;Salary;Department
+1;John Smith;john.smith@example.com;32;New York;USA;75000;Engineering
+2;Jane Doe;jane.doe@example.com;28;Los Angeles;USA;68000;Marketing
+3;Bob Johnson;bob.johnson@example.com;45;Chicago;USA;82000;Sales
+4;Alice Williams;alice.williams@example.com;35;Houston;USA;71000;Engineering
+5;Charlie Brown;charlie.brown@example.com;29;Phoenix;USA;65000;HR

@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  csv-viewer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: csv-viewer-app
+    ports:
+      - "9080:9080"
+      - "9443:9443"
+    environment:
+      - HTTP_PORT=9080
+      - HTTPS_PORT=9443
+    volumes:
+      # Persist uploaded CSV files
+      - csv-data:/opt/ol/wlp/output/defaultServer/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  csv-data:
+    driver: local
+
+# Made with Bob
