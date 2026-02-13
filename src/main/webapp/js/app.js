@@ -238,22 +238,22 @@ class CsvViewerApp {
         const fileSize = this.formatFileSize(metadata.size);
 
         div.innerHTML = `
-            <div class="file-info-left">
+            <div class="file-info-container">
                 <div class="file-name">${this.escapeHtml(metadata.originalName)}</div>
                 <div class="file-meta">
-                    ${metadata.rowCount.toLocaleString()} rows × ${metadata.columnCount} columns | 
-                    ${fileSize} | 
+                    ${metadata.rowCount.toLocaleString()} rows × ${metadata.columnCount} columns |
+                    ${fileSize} |
                     Uploaded: ${uploadDate} |
                     Delimiter: ${this.getDelimiterName(metadata.delimiter)}
                 </div>
-            </div>
-            <div class="file-actions">
-                <button class="btn btn-primary btn-small" onclick="app.openViewer('${metadata.id}')">
-                    👁️ View
-                </button>
-                <button class="btn btn-danger btn-small" onclick="app.deleteFile('${metadata.id}')">
-                    🗑️ Delete
-                </button>
+                <div class="file-actions">
+                    <button class="btn btn-primary btn-small" onclick="app.openViewer('${metadata.id}')">
+                        👁️ View
+                    </button>
+                    <button class="btn btn-danger btn-small" onclick="app.deleteFile('${metadata.id}')">
+                        🗑️ Delete
+                    </button>
+                </div>
             </div>
         `;
 

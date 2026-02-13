@@ -30,14 +30,18 @@
             </div>
         </header>
 
-        <!-- File List Section -->
-        <section id="file-list-section" class="card" style="display: none;">
-            <h2>Uploaded Files</h2>
-            <div id="file-list" class="file-list"></div>
-        </section>
+        <!-- Main Content Area with Two Columns -->
+        <div class="main-content">
+            <!-- Left Sidebar: File List Section -->
+            <aside id="file-list-section" class="sidebar-left" style="display: none;">
+                <div class="card">
+                    <h2>Uploaded Files</h2>
+                    <div id="file-list" class="file-list"></div>
+                </div>
+            </aside>
 
-        <!-- CSV Viewer Section -->
-        <section id="viewer-section" class="card" style="display: none;">
+            <!-- Right Content: CSV Viewer Section -->
+            <section id="viewer-section" class="content-right card" style="display: none;">
             <div class="viewer-header">
                 <div class="viewer-title">
                     <h2 id="current-file-name">File Name</h2>
@@ -94,10 +98,11 @@
                 </div>
             </div>
         </section>
+        </div> <!-- End main-content -->
 
         <!-- Error Message -->
         <div id="error-message" class="error-message" style="display: none;"></div>
-    </div>
+    </div> <!-- End container -->
 
     <script src="js/app.js"></script>
 </body>
