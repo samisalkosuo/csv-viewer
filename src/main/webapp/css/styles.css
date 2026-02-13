@@ -34,6 +34,26 @@ header h1 {
 .subtitle {
     font-size: 1.2em;
     opacity: 0.9;
+
+/* User Info */
+.user-info {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.username {
+    color: white;
+    font-size: 1em;
+    font-weight: 500;
+}
+
+.user-info .btn {
+    padding: 8px 16px;
+    font-size: 0.9em;
+}
 }
 
 /* Card */

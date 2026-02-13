@@ -5,6 +5,7 @@ A powerful web application built with OpenLiberty (Java 21) for uploading, viewi
 ## Features
 
 ### Core Functionality
+- ✅ **User Authentication**: Secure login with configurable credentials
 - ✅ **File Upload**: Drag-and-drop or browse to upload CSV files (up to 500MB)
 - ✅ **Automatic Delimiter Detection**: Supports comma (,), semicolon (;), tab (\t), and pipe (|)
 - ✅ **Streaming Parser**: Memory-efficient processing for large CSV files
@@ -81,6 +82,12 @@ Open your browser and navigate to:
 ```
 http://localhost:9080
 ```
+
+**Default Login Credentials:**
+- Username: `admin`
+- Password: `admin`
+
+⚠️ **Important**: Change these credentials in production! See [Authentication Configuration](#authentication-configuration) below.
 
 ## Usage Guide
 
@@ -168,29 +175,81 @@ csv-viewer/
 
 ## API Endpoints
 
-### Upload File
+### Authentication
+
+All API endpoints (except `/api/auth/login` and `/api/auth/validate`) require authentication via Bearer token in the Authorization header.
+
+#### Login
+```
+POST /api/auth/login
+Content-Type: application/json
+Body: {
+  "username": "admin",
+  "password": "admin"
+}
+Response: {
+  "success": true,
+  "message": "Login successful",
+  "username": "admin",
+  "token": "uuid-token"
+}
+```
+
+#### Logout
+```
+POST /api/auth/logout
+Authorization: Bearer {token}
+Response: {
+  "success": true,
+  "message": "Logout successful"
+}
+```
+
+#### Validate Token
+```
+GET /api/auth/validate
+Authorization: Bearer {token}
+Response: {
+  "success": true,
+  "message": "Token is valid",
+  "username": "admin",
+  "token": "uuid-token"
+}
+```
+
+### CSV Operations
+
+All CSV endpoints require authentication (Authorization: Bearer {token} header).
+
+## API Endpoints
+
+#### Upload File
 ```
 POST /api/csv/upload
+Authorization: Bearer {token}
 Content-Type: multipart/form-data
 Body: file (CSV file)
 Response: CsvMetadata object
 ```
 
-### List Files
+#### List Files
 ```
 GET /api/csv/list
+Authorization: Bearer {token}
 Response: Array of CsvMetadata objects
 ```
 
-### Get File Metadata
+#### Get File Metadata
 ```
 GET /api/csv/{fileId}/metadata
+Authorization: Bearer {token}
 Response: CsvMetadata object
 ```
 
-### Get Paginated Data
+#### Get Paginated Data
 ```
 GET /api/csv/{fileId}/data
+Authorization: Bearer {token}
 Query Parameters:
   - page: Page number (0-based)
   - pageSize: Rows per page
@@ -201,10 +260,12 @@ Query Parameters:
 Response: CsvData object
 ```
 
-### Download Filtered CSV
+#### Download Filtered CSV
 ```
 GET /api/csv/{fileId}/download
+Authorization: Bearer {token}
 Query Parameters:
+  - token: Authentication token (for download links)
   - sortColumn: Column name to sort by
   - sortOrder: 'asc' or 'desc'
   - globalSearch: Search term
@@ -212,11 +273,48 @@ Query Parameters:
 Response: CSV file
 ```
 
-### Delete File
+#### Delete File
 ```
 DELETE /api/csv/{fileId}
+Authorization: Bearer {token}
 Response: Success message
 ```
+
+## Authentication Configuration
+
+The application uses environment variables for authentication credentials. This is especially useful for containerized deployments.
+
+### Setting Credentials
+
+**Option 1: Environment Variables**
+```bash
+export APP_AUTH_USERNAME=your_username
+export APP_AUTH_PASSWORD=your_password
+mvn liberty:dev
+```
+
+**Option 2: Docker/Docker Compose**
+Edit `docker-compose.yml`:
+```yaml
+environment:
+  - APP_AUTH_USERNAME=your_username
+  - APP_AUTH_PASSWORD=your_password
+```
+
+**Option 3: Configuration File**
+Edit `src/main/resources/META-INF/microprofile-config.properties`:
+```properties
+app.auth.username=your_username
+app.auth.password=your_password
+```
+
+### Security Best Practices
+
+1. **Change Default Credentials**: Never use default credentials in production
+2. **Use Strong Passwords**: Minimum 12 characters with mixed case, numbers, and symbols
+3. **Environment Variables**: Prefer environment variables over config files for sensitive data
+4. **HTTPS**: Always use HTTPS in production (port 9443)
+5. **Session Management**: Sessions are stored in-memory and cleared on logout
 
 ## Configuration
 
@@ -288,10 +386,12 @@ The WAR file will be in `target/csv-viewer.war`
 
 ## Security Notes
 
-- Files are stored with UUID names to prevent conflicts
-- Input validation prevents malicious file uploads
-- CSV content is escaped to prevent XSS attacks
-- Consider adding authentication for production use
+- **Authentication Required**: All API endpoints require valid authentication
+- **Session-Based**: Token-based session management with automatic expiration
+- **Files Storage**: Files are stored with UUID names to prevent conflicts
+- **Input Validation**: Prevents malicious file uploads
+- **XSS Protection**: CSV content is properly escaped
+- **CORS Enabled**: Configured for API access (adjust for production)
 
 ## License
 
@@ -320,9 +420,11 @@ Future enhancements:
 - [ ] Data visualization (charts/graphs)
 - [ ] Column filtering by data type
 - [ ] Export to different formats (JSON, XML)
-- [ ] User authentication and authorization
+- [x] User authentication and authorization
+- [ ] Multi-user support with role-based access
 - [ ] File sharing capabilities
 - [ ] Advanced analytics features
+- [ ] Password encryption and secure storage
 
 ---
 

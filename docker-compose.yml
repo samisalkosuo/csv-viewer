@@ -12,6 +12,9 @@ services:
     environment:
       - HTTP_PORT=9080
       - HTTPS_PORT=9443
+      # Authentication credentials (change these in production!)
+      - APP_AUTH_USERNAME=admin
+      - APP_AUTH_PASSWORD=admin
     volumes:
       # Persist uploaded CSV files
       - csv-data:/opt/ol/wlp/output/defaultServer/data

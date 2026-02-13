@@ -9,6 +9,7 @@
         <feature>jsonp-2.1</feature>
         <feature>cdi-4.0</feature>
         <feature>mpConfig-3.1</feature>
+        <feature>appSecurity-5.0</feature>
     </featureManager>
 
     <!-- HTTP endpoint configuration -->

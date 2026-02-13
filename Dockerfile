@@ -40,6 +40,8 @@ RUN mkdir -p /opt/ol/wlp/output/defaultServer/data/uploads && \
 # Set environment variables
 ENV HTTP_PORT=9080
 ENV HTTPS_PORT=9443
+ENV APP_AUTH_USERNAME=admin
+ENV APP_AUTH_PASSWORD=admin
 
 # Expose ports
 EXPOSE 9080 9443

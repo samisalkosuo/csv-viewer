@@ -1,3 +1,86 @@
+// Authentication check
+document.addEventListener('DOMContentLoaded', () => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        window.location.href = '/login.html';
+        return;
+    }
+    
+    // Validate token
+    validateAuthToken(token);
+    
+    // Display username and logout button
+    displayUserInfo();
+});
+
+async function validateAuthToken(token) {
+    try {
+        const response = await fetch('/api/auth/validate', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!response.ok) {
+            // Token is invalid, redirect to login
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('username');
+            window.location.href = '/login.html';
+        }
+    } catch (error) {
+        console.error('Token validation error:', error);
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('username');
+        window.location.href = '/login.html';
+    }
+}
+
+function displayUserInfo() {
+    const username = localStorage.getItem('username');
+    const header = document.querySelector('header');
+    
+    const userInfoDiv = document.createElement('div');
+    userInfoDiv.className = 'user-info';
+    userInfoDiv.innerHTML = `
+        <span class="username">👤 ${username}</span>
+        <button id="logout-btn" class="btn btn-secondary">Logout</button>
+    `;
+    
+    header.appendChild(userInfoDiv);
+    
+    // Add logout handler
+    document.getElementById('logout-btn').addEventListener('click', logout);
+}
+
+async function logout() {
+    const token = localStorage.getItem('authToken');
+    
+    try {
+        await fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+    } catch (error) {
+        console.error('Logout error:', error);
+    }
+    
+    // Clear local storage and redirect
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('username');
+    window.location.href = '/login.html';
+}
+
+// Helper function to get auth headers
+function getAuthHeaders() {
+    const token = localStorage.getItem('authToken');
+    return {
+        'Authorization': `Bearer ${token}`
+    };
+}
+
 // CSV Viewer Application
 class CsvViewerApp {
     constructor() {
@@ -113,6 +196,7 @@ class CsvViewerApp {
         try {
             const response = await fetch('/api/csv/upload', {
                 method: 'POST',
+                headers: getAuthHeaders(),
                 body: formData
             });
 
@@ -138,7 +222,9 @@ class CsvViewerApp {
 
     async loadFileList() {
         try {
-            const response = await fetch('/api/csv/list');
+            const response = await fetch('/api/csv/list', {
+                headers: getAuthHeaders()
+            });
             const files = await response.json();
 
             const fileListSection = document.getElementById('file-list-section');
@@ -207,7 +293,9 @@ class CsvViewerApp {
 
         try {
             // Load metadata
-            const metadataResponse = await fetch(`/api/csv/${fileId}/metadata`);
+            const metadataResponse = await fetch(`/api/csv/${fileId}/metadata`, {
+                headers: getAuthHeaders()
+            });
             this.currentMetadata = await metadataResponse.json();
 
             // Update viewer header
@@ -290,7 +378,9 @@ class CsvViewerApp {
                 params.append(`col_${column}`, value);
             });
 
-            const response = await fetch(`/api/csv/${this.currentFileId}/data?${params}`);
+            const response = await fetch(`/api/csv/${this.currentFileId}/data?${params}`, {
+                headers: getAuthHeaders()
+            });
             const data = await response.json();
 
             this.renderTable(data);
@@ -399,7 +489,8 @@ class CsvViewerApp {
 
         try {
             const response = await fetch(`/api/csv/${fileId}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: getAuthHeaders()
             });
 
             if (!response.ok) {
@@ -436,7 +527,8 @@ class CsvViewerApp {
                 params.append('inverseSearch', 'true');
             }
 
-            const url = `/api/csv/${this.currentFileId}/download?${params}`;
+            const token = localStorage.getItem('authToken');
+            const url = `/api/csv/${this.currentFileId}/download?${params}&token=${token}`;
             window.open(url, '_blank');
 
         } catch (error) {
