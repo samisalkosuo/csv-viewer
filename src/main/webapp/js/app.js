@@ -282,11 +282,8 @@ class CsvViewerApp {
 
             // Update viewer header
             document.getElementById('current-file-name').textContent = this.currentMetadata.originalName;
-            document.getElementById('file-stats').textContent = 
+            document.getElementById('file-stats').textContent =
                 `${this.currentMetadata.rowCount.toLocaleString()} rows × ${this.currentMetadata.columnCount} columns | ${this.formatFileSize(this.currentMetadata.size)}`;
-
-            // Create column search inputs
-            this.createColumnSearchInputs();
 
             // Show viewer section
             document.getElementById('viewer-section').style.display = 'block';
@@ -298,39 +295,6 @@ class CsvViewerApp {
         } catch (error) {
             this.showError('Failed to open file: ' + error.message);
         }
-    }
-
-    createColumnSearchInputs() {
-        const container = document.getElementById('column-search-container');
-        container.innerHTML = '';
-
-        this.currentMetadata.columns.forEach(column => {
-            const div = document.createElement('div');
-            div.className = 'column-search-item';
-            
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.placeholder = `Search in ${column}...`;
-            input.dataset.column = column;
-            
-            input.addEventListener('input', (e) => {
-                const value = e.target.value.trim();
-                if (value) {
-                    this.columnSearch[column] = value;
-                } else {
-                    delete this.columnSearch[column];
-                }
-                this.currentPage = 0;
-                this.loadCsvData();
-            });
-
-            const label = document.createElement('label');
-            label.textContent = column;
-
-            div.appendChild(label);
-            div.appendChild(input);
-            container.appendChild(div);
-        });
     }
 
     async loadCsvData() {
@@ -377,9 +341,18 @@ class CsvViewerApp {
         const thead = document.getElementById('table-header');
         const tbody = document.getElementById('table-body');
 
-        // Render header
+        // Save the currently focused element and its selection
+        const activeElement = document.activeElement;
+        const isFocusedOnSearch = activeElement && activeElement.classList.contains('column-search-input');
+        const focusedColumn = isFocusedOnSearch ? activeElement.dataset.column : null;
+        const cursorPosition = isFocusedOnSearch ? activeElement.selectionStart : null;
+
+        // Render header with two rows: column names and search inputs
         thead.innerHTML = '';
+        
+        // Row 1: Column names (sortable)
         const headerRow = document.createElement('tr');
+        headerRow.className = 'header-row-names';
         
         data.columns.forEach(column => {
             const th = document.createElement('th');
@@ -405,6 +378,52 @@ class CsvViewerApp {
         });
         
         thead.appendChild(headerRow);
+
+        // Row 2: Column search inputs
+        const searchRow = document.createElement('tr');
+        searchRow.className = 'header-row-search';
+        
+        data.columns.forEach(column => {
+            const th = document.createElement('th');
+            th.className = 'search-cell';
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'column-search-input';
+            input.placeholder = `Search...`;
+            input.dataset.column = column;
+            
+            // Restore existing search value if any
+            if (this.columnSearch[column]) {
+                input.value = this.columnSearch[column];
+            }
+            
+            input.addEventListener('input', (e) => {
+                const value = e.target.value.trim();
+                if (value) {
+                    this.columnSearch[column] = value;
+                } else {
+                    delete this.columnSearch[column];
+                }
+                this.currentPage = 0;
+                this.loadCsvData();
+            });
+
+            th.appendChild(input);
+            searchRow.appendChild(th);
+            
+            // Restore focus and cursor position if this was the focused input
+            if (focusedColumn === column) {
+                setTimeout(() => {
+                    input.focus();
+                    if (cursorPosition !== null) {
+                        input.setSelectionRange(cursorPosition, cursorPosition);
+                    }
+                }, 0);
+            }
+        });
+        
+        thead.appendChild(searchRow);
 
         // Render body
         tbody.innerHTML = '';
