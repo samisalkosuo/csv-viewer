@@ -224,7 +224,8 @@ public class CsvResource {
             @QueryParam("sortColumn") String sortColumn,
             @QueryParam("sortOrder") @DefaultValue("asc") String sortOrder,
             @QueryParam("globalSearch") String globalSearch,
-            @QueryParam("inverseSearch") @DefaultValue("false") boolean inverseSearch) {
+            @QueryParam("inverseSearch") @DefaultValue("false") boolean inverseSearch,
+            @QueryParam("hiddenColumns") String hiddenColumns) {
         
         try {
             if (!fileStorageService.fileExists(fileId)) {
@@ -236,21 +237,47 @@ public class CsvResource {
             CsvMetadata metadata = fileStorageService.getMetadata(fileId);
             Map<String, String> columnSearch = new HashMap<>();
             
+            // Parse hidden columns
+            List<String> hiddenColumnsList = new java.util.ArrayList<>();
+            if (hiddenColumns != null && !hiddenColumns.trim().isEmpty()) {
+                hiddenColumnsList = java.util.Arrays.asList(hiddenColumns.split(","));
+                LOGGER.info("Hidden columns: " + hiddenColumnsList);
+            }
+            
             List<List<String>> rows = csvParserService.getCsvDataForDownload(
                 fileId, sortColumn, sortOrder, globalSearch, columnSearch, inverseSearch
             );
             
+            // Filter columns based on hidden columns
+            List<String> allColumns = metadata.getColumns();
+            List<Integer> visibleColumnIndices = new java.util.ArrayList<>();
+            List<String> visibleColumns = new java.util.ArrayList<>();
+            
+            for (int i = 0; i < allColumns.size(); i++) {
+                if (!hiddenColumnsList.contains(allColumns.get(i))) {
+                    visibleColumnIndices.add(i);
+                    visibleColumns.add(allColumns.get(i));
+                }
+            }
+            
             // Create streaming output for CSV
             StreamingOutput stream = output -> {
                 try (Writer writer = new OutputStreamWriter(output, StandardCharsets.UTF_8)) {
-                    // Write header
-                    writer.write(String.join(",", metadata.getColumns()));
+                    // Write header (only visible columns)
+                    writer.write(String.join(",", visibleColumns));
                     writer.write("\n");
                     
-                    // Write rows
+                    // Write rows (only visible columns)
                     for (List<String> row : rows) {
+                        List<String> visibleRow = new java.util.ArrayList<>();
+                        for (int index : visibleColumnIndices) {
+                            if (index < row.size()) {
+                                visibleRow.add(row.get(index));
+                            }
+                        }
+                        
                         // Escape values that contain commas or quotes
-                        List<String> escapedRow = row.stream()
+                        List<String> escapedRow = visibleRow.stream()
                             .map(cell -> {
                                 if (cell.contains(",") || cell.contains("\"") || cell.contains("\n")) {
                                     return "\"" + cell.replace("\"", "\"\"") + "\"";

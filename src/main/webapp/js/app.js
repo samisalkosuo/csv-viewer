@@ -93,6 +93,7 @@ class CsvViewerApp {
         this.columnSearch = {};
         this.inverseSearch = false;
         this.currentMetadata = null;
+        this.hiddenColumns = new Set(); // Track hidden columns
         
         this.init();
     }
@@ -268,10 +269,17 @@ class CsvViewerApp {
         this.globalSearch = '';
         this.columnSearch = {};
         this.inverseSearch = false;
+        this.hiddenColumns.clear(); // Reset hidden columns
 
         // Reset search inputs
         document.getElementById('global-search').value = '';
         document.getElementById('inverse-search').checked = false;
+        
+        // Remove hidden columns indicator if it exists
+        const indicator = document.getElementById('hidden-columns-indicator');
+        if (indicator) {
+            indicator.remove();
+        }
 
         try {
             // Load metadata
@@ -337,6 +345,15 @@ class CsvViewerApp {
         }
     }
 
+    toggleColumnVisibility(column) {
+        if (this.hiddenColumns.has(column)) {
+            this.hiddenColumns.delete(column);
+        } else {
+            this.hiddenColumns.add(column);
+        }
+        this.loadCsvData();
+    }
+
     renderTable(data) {
         const thead = document.getElementById('table-header');
         const tbody = document.getElementById('table-body');
@@ -347,23 +364,37 @@ class CsvViewerApp {
         const focusedColumn = isFocusedOnSearch ? activeElement.dataset.column : null;
         const cursorPosition = isFocusedOnSearch ? activeElement.selectionStart : null;
 
+        // Filter visible columns
+        const visibleColumns = data.columns.filter(col => !this.hiddenColumns.has(col));
+
         // Render header with two rows: column names and search inputs
         thead.innerHTML = '';
         
-        // Row 1: Column names (sortable)
+        // Row 1: Column names (sortable) with hide/show icons
         const headerRow = document.createElement('tr');
         headerRow.className = 'header-row-names';
         
         data.columns.forEach(column => {
+            const isHidden = this.hiddenColumns.has(column);
+            if (isHidden) return; // Skip hidden columns
+            
             const th = document.createElement('th');
-            th.textContent = column;
             th.className = 'sortable';
+            
+            // Create container for column name and icon
+            const headerContent = document.createElement('div');
+            headerContent.className = 'column-header-content';
+            
+            // Column name span (clickable for sorting)
+            const columnName = document.createElement('span');
+            columnName.textContent = column;
+            columnName.className = 'column-name';
             
             if (this.sortColumn === column) {
                 th.classList.add(this.sortOrder === 'asc' ? 'sort-asc' : 'sort-desc');
             }
 
-            th.addEventListener('click', () => {
+            columnName.addEventListener('click', () => {
                 if (this.sortColumn === column) {
                     this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
                 } else {
@@ -374,6 +405,19 @@ class CsvViewerApp {
                 this.loadCsvData();
             });
 
+            // Hide/show icon
+            const toggleIcon = document.createElement('span');
+            toggleIcon.className = 'column-toggle-icon';
+            toggleIcon.innerHTML = '👁️';
+            toggleIcon.title = 'Hide column';
+            toggleIcon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleColumnVisibility(column);
+            });
+
+            headerContent.appendChild(columnName);
+            headerContent.appendChild(toggleIcon);
+            th.appendChild(headerContent);
             headerRow.appendChild(th);
         });
         
@@ -384,6 +428,9 @@ class CsvViewerApp {
         searchRow.className = 'header-row-search';
         
         data.columns.forEach(column => {
+            const isHidden = this.hiddenColumns.has(column);
+            if (isHidden) return; // Skip hidden columns
+            
             const th = document.createElement('th');
             th.className = 'search-cell';
             
@@ -431,7 +478,7 @@ class CsvViewerApp {
         if (data.rows.length === 0) {
             const tr = document.createElement('tr');
             const td = document.createElement('td');
-            td.colSpan = data.columns.length;
+            td.colSpan = visibleColumns.length;
             td.textContent = 'No data found';
             td.style.textAlign = 'center';
             td.style.padding = '40px';
@@ -443,7 +490,10 @@ class CsvViewerApp {
 
         data.rows.forEach(row => {
             const tr = document.createElement('tr');
-            row.forEach(cell => {
+            row.forEach((cell, index) => {
+                const column = data.columns[index];
+                if (this.hiddenColumns.has(column)) return; // Skip hidden columns
+                
                 const td = document.createElement('td');
                 td.textContent = cell;
                 td.title = cell; // Show full text on hover
@@ -451,6 +501,46 @@ class CsvViewerApp {
             });
             tbody.appendChild(tr);
         });
+        
+        // Add or update hidden columns indicator if any columns are hidden
+        if (this.hiddenColumns.size > 0) {
+            this.renderHiddenColumnsIndicator(data.columns);
+        } else {
+            // Remove indicator if no columns are hidden
+            const indicator = document.getElementById('hidden-columns-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+    }
+
+    renderHiddenColumnsIndicator(allColumns) {
+        const viewerSection = document.getElementById('viewer-section');
+        let indicator = document.getElementById('hidden-columns-indicator');
+        
+        if (!indicator) {
+            indicator = document.createElement('div');
+            indicator.id = 'hidden-columns-indicator';
+            indicator.className = 'hidden-columns-indicator';
+            viewerSection.insertBefore(indicator, viewerSection.querySelector('.table-container'));
+        }
+        
+        const hiddenColumnsList = Array.from(this.hiddenColumns);
+        indicator.innerHTML = `
+            <div class="hidden-columns-header">
+                <strong>Hidden Columns (${hiddenColumnsList.length}):</strong>
+            </div>
+            <div class="hidden-columns-list">
+                ${hiddenColumnsList.map(col => `
+                    <span class="hidden-column-tag">
+                        ${this.escapeHtml(col)}
+                        <button class="show-column-btn" onclick="app.toggleColumnVisibility('${this.escapeHtml(col)}')" title="Show column">
+                            👁️
+                        </button>
+                    </span>
+                `).join('')}
+            </div>
+        `;
     }
 
     updatePaginationControls(data) {
@@ -480,6 +570,14 @@ class CsvViewerApp {
     closeViewer() {
         document.getElementById('viewer-section').style.display = 'none';
         this.currentFileId = null;
+        this.hiddenColumns.clear(); // Clear hidden columns when closing
+        
+        // Remove hidden columns indicator if it exists
+        const indicator = document.getElementById('hidden-columns-indicator');
+        if (indicator) {
+            indicator.remove();
+        }
+        
         document.getElementById('upload-section').scrollIntoView({ behavior: 'smooth' });
     }
 
@@ -526,6 +624,12 @@ class CsvViewerApp {
 
             if (this.inverseSearch) {
                 params.append('inverseSearch', 'true');
+            }
+
+            // Add hidden columns to exclude them from download
+            if (this.hiddenColumns.size > 0) {
+                const hiddenColumnsArray = Array.from(this.hiddenColumns);
+                params.append('hiddenColumns', hiddenColumnsArray.join(','));
             }
 
             const token = localStorage.getItem('authToken');

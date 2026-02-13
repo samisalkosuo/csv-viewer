@@ -32,10 +32,24 @@ public class AuthenticationFilter implements ContainerRequestFilter {
             return;
         }
         
+        String token = null;
+        
         // Get Authorization header
         String authHeader = requestContext.getHeaderString("Authorization");
         
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            // Extract token from header
+            token = authHeader.substring(7);
+        } else {
+            // For download requests, check query parameter
+            String tokenParam = requestContext.getUriInfo().getQueryParameters().getFirst("token");
+            if (tokenParam != null && !tokenParam.isEmpty()) {
+                token = tokenParam;
+                logger.info("Using token from query parameter for download");
+            }
+        }
+        
+        if (token == null) {
             logger.warning("Missing or invalid Authorization header for path: " + path);
             requestContext.abortWith(
                 Response.status(Response.Status.UNAUTHORIZED)
@@ -45,8 +59,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
             return;
         }
         
-        // Extract and validate token
-        String token = authHeader.substring(7);
+        // Validate token
         if (!authService.validateToken(token)) {
             logger.warning("Invalid token for path: " + path);
             requestContext.abortWith(
