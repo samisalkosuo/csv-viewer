@@ -38,7 +38,7 @@ async function validateAuthToken(token) {
 
 function displayUserInfo() {
     const username = localStorage.getItem('username');
-    const header = document.querySelector('header');
+    const headerRight = document.querySelector('.header-right');
     
     const userInfoDiv = document.createElement('div');
     userInfoDiv.className = 'user-info';
@@ -47,7 +47,7 @@ function displayUserInfo() {
         <button id="logout-btn" class="btn btn-secondary">Logout</button>
     `;
     
-    header.appendChild(userInfoDiv);
+    headerRight.appendChild(userInfoDiv);
     
     // Add logout handler
     document.getElementById('logout-btn').addEventListener('click', logout);
@@ -103,30 +103,12 @@ class CsvViewerApp {
     }
 
     setupEventListeners() {
-        // Upload area
-        const uploadArea = document.getElementById('upload-area');
+        // Upload button
         const fileInput = document.getElementById('file-input');
         const browseButton = document.getElementById('browse-button');
 
         browseButton.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', (e) => this.handleFileSelect(e.target.files[0]));
-
-        // Drag and drop
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('drag-over');
-        });
-
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('drag-over');
-        });
-
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('drag-over');
-            const file = e.dataTransfer.files[0];
-            if (file) this.handleFileSelect(file);
-        });
 
         // Viewer controls
         document.getElementById('close-viewer-btn').addEventListener('click', () => {

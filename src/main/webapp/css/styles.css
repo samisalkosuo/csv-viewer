@@ -16,7 +16,7 @@ body {
 .container {
     max-width: 1400px;
     margin: 0 auto;
-    padding-top: 180px; /* Space for fixed header */
+    padding-top: 120px; /* Reduced space for compact header */
 }
 
 /* Header */
@@ -26,22 +26,88 @@ header {
     left: 0;
     right: 0;
     z-index: 1000;
-    text-align: center;
     color: white;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 20px;
+    padding: 20px 30px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+.header-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+}
+
+.header-left {
+    flex: 1;
+    text-align: left;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
 header h1 {
-    font-size: 3em;
-    margin-bottom: 10px;
+    font-size: 2.2em;
+    margin-bottom: 5px;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .subtitle {
-    font-size: 1.2em;
+    font-size: 1em;
     opacity: 0.9;
+}
+
+/* Header Upload Section */
+.header-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+.btn-upload {
+    white-space: nowrap;
+    font-size: 1em;
+    padding: 12px 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-upload:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.upload-progress-compact {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 8px 15px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.progress-bar-compact {
+    width: 150px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-text-compact {
+    color: white;
+    font-size: 0.85em;
+    font-weight: 600;
+    margin: 0;
+    white-space: nowrap;
+}
 
 /* User Info */
 .user-info {
@@ -61,7 +127,6 @@ header h1 {
 .user-info .btn {
     padding: 8px 16px;
     font-size: 0.9em;
-}
 }
 
 /* Card */
@@ -456,15 +521,44 @@ header h1 {
 /* Responsive Design */
 @media (max-width: 768px) {
     .container {
-        padding-top: 200px; /* More space for wrapped content on mobile */
+        padding-top: 140px; /* Adjusted for compact header */
     }
 
     header {
-        padding: 15px 10px;
+        padding: 15px;
+    }
+
+    .header-content {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+
+    .header-left {
+        text-align: center;
+    }
+
+    .header-right {
+        justify-content: center;
     }
 
     header h1 {
-        font-size: 2em;
+        font-size: 1.8em;
+    }
+
+    .subtitle {
+        font-size: 0.9em;
+    }
+
+    .btn-upload {
+        width: 100%;
+        font-size: 0.95em;
+        padding: 10px 20px;
+    }
+
+    .upload-progress-compact {
+        width: 100%;
+        justify-content: center;
     }
 
     .card {

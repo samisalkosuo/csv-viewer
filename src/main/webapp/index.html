@@ -9,26 +9,26 @@
 <body>
     <div class="container">
         <header>
-            <h1>📊 CSV Viewer</h1>
-            <p class="subtitle">Upload and analyze CSV files with ease</p>
-        </header>
-
-        <!-- Upload Section -->
-        <section id="upload-section" class="card">
-            <h2>Upload CSV File</h2>
-            <div class="upload-area" id="upload-area">
-                <div class="upload-icon">📁</div>
-                <p>Drag and drop your CSV file here or click to browse</p>
-                <input type="file" id="file-input" accept=".csv" hidden>
-                <button id="browse-button" class="btn btn-primary">Browse Files</button>
-            </div>
-            <div id="upload-progress" class="upload-progress" style="display: none;">
-                <div class="progress-bar">
-                    <div id="progress-fill" class="progress-fill"></div>
+            <div class="header-content">
+                <div class="header-left">
+                    <h1>📊 CSV Viewer</h1>
+                    <p class="subtitle">Upload and analyze CSV files with ease</p>
                 </div>
-                <p id="progress-text">Uploading...</p>
+                <div class="header-right">
+                    <!-- Compact Upload Section -->
+                    <div id="upload-section" class="header-upload">
+                        <input type="file" id="file-input" accept=".csv" hidden>
+                        <button id="browse-button" class="btn btn-primary btn-upload">📁 Upload CSV</button>
+                        <div id="upload-progress" class="upload-progress-compact" style="display: none;">
+                            <div class="progress-bar-compact">
+                                <div id="progress-fill" class="progress-fill"></div>
+                            </div>
+                            <p id="progress-text" class="progress-text-compact">Uploading...</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </section>
+        </header>
 
         <!-- File List Section -->
         <section id="file-list-section" class="card" style="display: none;">
