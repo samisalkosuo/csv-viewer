@@ -4,11 +4,13 @@ import streamlit as st
 
 from core.auth import auth_required, logout
 from core.config import APP_TITLE, AUTH_ENABLED, MAX_FILE_SIZE_MB
+from core.state import init_state, save_state
 from core.storage import delete_file, list_files, save_file
 
 st.set_page_config(page_title=APP_TITLE, page_icon="📊", layout="wide")
 
 auth_required()
+init_state()
 
 
 def _select_file(file_id: str) -> None:
@@ -78,3 +80,5 @@ with st.sidebar:
 
 if not files:
     st.info("Upload a CSV file to get started")
+
+save_state()

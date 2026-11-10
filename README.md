@@ -66,6 +66,9 @@ All configuration is done through environment variables; every setting has a def
 
 To keep uploads between sessions, set `SESSION_ONLY=false` and mount a volume at `DATA_DIR`.
 
+The selected file and your chart/table settings survive a page reload. A random `sid` is kept in the page URL and the state is stored in `DATA_DIR/state/`. This is disabled when `SESSION_ONLY=true`.
+
+
 ## Pages
 
 - **Home** (`app.py`) — upload a CSV, see and switch between loaded files, delete files.

@@ -6,11 +6,13 @@ import streamlit as st
 
 from core.auth import auth_required
 from core.config import APP_TITLE
+from core.state import init_state, save_state
 from core.storage import load_file
 
 st.set_page_config(page_title=APP_TITLE, page_icon="📊", layout="wide")
 
 auth_required()
+init_state()
 
 CHART_TYPES = ["Bar", "Line", "Scatter", "Histogram", "Box", "Pie"]
 NO_Y = "None / Count"
@@ -87,6 +89,7 @@ try:
     df = _load_df(file_id)
 except FileNotFoundError:
     st.session_state.pop("active_file_id", None)
+    save_state()
     st.warning("The selected file is no longer available. Please upload a CSV file on the Home page.")
     st.stop()
 
@@ -96,20 +99,24 @@ columns = [str(c) for c in df.columns]
 
 with st.sidebar:
     st.header("Chart settings")
-    chart_type = st.selectbox("Chart type", CHART_TYPES)
-    x_col = st.selectbox("X axis", columns)
+    # Keys start with "p_" so core.state persists them across page reloads;
+    # column-dependent ones are scoped to the file so options always match.
+    chart_type = st.selectbox("Chart type", CHART_TYPES, key="p_chart_type")
+    x_col = st.selectbox("X axis", columns, key=f"p_chart_x_{file_id}")
     y_choice = st.selectbox(
         "Y axis",
         [NO_Y] + columns,
         index=0,
         disabled=chart_type == "Histogram",
         help="Not used for Histogram. Leave as 'None / Count' to count rows.",
+        key=f"p_chart_y_{file_id}",
     )
     color_choice = st.selectbox(
         "Color / Group by",
         [NO_COLOR] + columns,
         disabled=chart_type == "Pie",
         help="Not used for Pie charts.",
+        key=f"p_chart_color_{file_id}",
     )
 
     y_col = None if (y_choice == NO_Y or chart_type == "Histogram") else y_choice
@@ -117,9 +124,13 @@ with st.sidebar:
 
     agg = RAW
     if y_col is not None:
-        agg = st.selectbox("Aggregation", AGGREGATIONS)
+        agg = st.selectbox("Aggregation", AGGREGATIONS, key="p_chart_agg")
 
-    title = st.text_input("Title", value=f"{chart_type}: {x_col}", key=f"chart_title_{chart_type}_{x_col}")
+    title_key = f"p_chart_title_{file_id}_{chart_type}_{x_col}"
+    st.session_state.setdefault(title_key, f"{chart_type}: {x_col}")
+    title = st.text_input("Title", key=title_key)
+
+save_state()
 
 try:
     fig, plot_df, aggregated = _build_figure(df, chart_type, x_col, y_col, color_col, agg, title)

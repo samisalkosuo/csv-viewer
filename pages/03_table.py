@@ -5,11 +5,13 @@ import streamlit as st
 
 from core.auth import auth_required
 from core.config import APP_TITLE
+from core.state import init_state, save_state
 from core.storage import list_files, load_file
 
 st.set_page_config(page_title=APP_TITLE, page_icon="📊", layout="wide")
 
 auth_required()
+init_state()
 
 DELIM_MAP = {
     "Comma (,)": ",",
@@ -32,6 +34,8 @@ try:
     df = _load_df(file_id)
 except FileNotFoundError:
     st.session_state.pop("active_file_id", None)
+    save_state()
+
     st.warning("The selected file is no longer available. Please upload a CSV file on the Home page.")
     st.stop()
 
@@ -44,42 +48,47 @@ if file_info:
 # Sidebar filtering controls
 with st.sidebar:
     st.header("Filter Controls")
-    global_search = st.text_input("Global search", placeholder="Search all columns...")
-    inverse_search = st.checkbox("Inverse search", help="Exclude rows that match the filter criteria")
+    # Keys start with "p_" so core.state persists them across page reloads.
+    global_search = st.text_input("Global search", placeholder="Search all columns...", key="p_table_search")
+    inverse_search = st.checkbox(
+        "Inverse search", help="Exclude rows that match the filter criteria", key="p_table_inverse"
+    )
 
     with st.expander("Column Filters", expanded=False):
         col_filters: dict[str, str] = {}
         for col in df.columns:
-            val = st.text_input(f"Filter by {col}", key=f"col_filter_{col}")
+            val = st.text_input(f"Filter by {col}", key=f"p_col_filter_{file_id}_{col}")
             if val.strip():
-                col_filters[str(col)] = val.strip()
+                col_filters[col] = val.strip()
 
     st.subheader("Columns")
-    # Per-column visibility stored as a dict {col: bool} keyed to the file
-    vis_state_key = f"col_vis_{file_id}"
+    # Per-column visibility stored as a dict {str(col): bool} keyed to the file
+    # (string keys so it survives a JSON round trip)
+    vis_state_key = f"p_col_vis_{file_id}"
     if vis_state_key not in st.session_state:
-        st.session_state[vis_state_key] = {col: True for col in df.columns}
+        st.session_state[vis_state_key] = {str(col): True for col in df.columns}
     vis = st.session_state[vis_state_key]
-    # Ensure any new columns (e.g. after reload) are initialised visible
     for col in df.columns:
-        vis.setdefault(col, True)
+        vis.setdefault(str(col), True)
 
     # "Show all" / "Hide all" quick actions
     qa_col1, qa_col2 = st.columns(2)
     if qa_col1.button("Show all", use_container_width=True):
         for col in df.columns:
-            vis[col] = True
+            vis[str(col)] = True
     if qa_col2.button("Hide all", use_container_width=True):
         for col in df.columns:
-            vis[col] = False
+            vis[str(col)] = False
 
     # Per-column toggle rows: eye icon button + column name
     for col in df.columns:
-        icon = "👁️" if vis[col] else "🙈"
+        icon = "👁️" if vis[str(col)] else "🙈"
         if st.button(f"{icon}  {col}", key=f"vis_toggle_{file_id}_{col}", use_container_width=True):
-            vis[col] = not vis[col]
+            vis[str(col)] = not vis[str(col)]
 
-    visible_cols = [col for col in df.columns if vis.get(col, True)]
+    visible_cols = [col for col in df.columns if vis.get(str(col), True)]
+
+save_state()
 
 # Apply filters
 clean_global = global_search.strip()
@@ -125,7 +134,7 @@ st.dataframe(
 
 # Download section
 st.subheader("Download filtered data")
-delim_choice = st.radio("Delimiter", ["Comma (,)", "Semicolon (;)", "Tab (\\t)"], horizontal=True)
+delim_choice = st.radio("Delimiter", ["Comma (,)", "Semicolon (;)", "Tab (\\t)"], horizontal=True, key="p_download_delim")
 delim_char = DELIM_MAP.get(delim_choice, ",")
 
 orig_name = file_info.name if file_info else "data.csv"
