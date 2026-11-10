@@ -1,3 +1,5 @@
+local/
+plans/
 target/
 pom.xml.tag
 pom.xml.releaseBackup
@@ -37,3 +39,11 @@ logs/
 
 # Liberty server files
 .liberty/
+
+# Python
+__pycache__/
+*.pyc
+.env
+
+# Streamlit local config / secrets
+.streamlit/
