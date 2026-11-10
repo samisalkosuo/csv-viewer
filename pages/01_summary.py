@@ -6,16 +6,9 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from core.auth import auth_required
-from core.config import APP_TITLE
 from core.stats import ColumnStat, compute_stats, get_df_overview
-from core.state import init_state, save_state
+from core.state import save_state
 from core.storage import list_files, load_file
-
-st.set_page_config(page_title=APP_TITLE, page_icon="📊", layout="wide")
-
-auth_required()
-init_state()
 
 TYPE_COLORS = {
     "numeric": "#2563eb",
@@ -118,7 +111,7 @@ def _build_charts(df: pd.DataFrame, stats: list[ColumnStat]) -> list:
 
 file_id = st.session_state.get("active_file_id")
 if not file_id:
-    st.info("Please upload a CSV file on the Home page.")
+    st.info("Please upload a CSV file on the App tab.")
     st.stop()
 
 try:
@@ -126,7 +119,7 @@ try:
 except FileNotFoundError:
     st.session_state.pop("active_file_id", None)
     save_state()
-    st.warning("The selected file is no longer available. Please upload a CSV file on the Home page.")
+    st.warning("The selected file is no longer available. Please upload a CSV file on the App tab.")
     st.stop()
 
 file_info = next((f for f in list_files() if f.file_id == file_id), None)

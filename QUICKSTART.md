@@ -18,7 +18,7 @@ docker run -it --rm -p 8501:8501 csv-viewer
 
 1. Open <http://localhost:8501> in your browser.
 2. Drag & drop your CSV file onto the uploader (try `sample-data/sample-comma.csv`).
-3. Explore the pages in the sidebar: **Summary**, **Chart Builder**, **Table View**.
+3. Explore the tabs at the top: **Summary**, **Charts**, **Table**.
 
 ## Handy settings
 

@@ -3,15 +3,8 @@
 import pandas as pd
 import streamlit as st
 
-from core.auth import auth_required
-from core.config import APP_TITLE
-from core.state import init_state, save_state
+from core.state import save_state
 from core.storage import list_files, load_file
-
-st.set_page_config(page_title=APP_TITLE, page_icon="📊", layout="wide")
-
-auth_required()
-init_state()
 
 DELIM_MAP = {
     "Comma (,)": ",",
@@ -27,7 +20,7 @@ def _load_df(file_id: str) -> pd.DataFrame:
 
 file_id = st.session_state.get("active_file_id")
 if not file_id:
-    st.info("Please upload a CSV file on the Home page.")
+    st.info("Please upload a CSV file on the App tab.")
     st.stop()
 
 try:
@@ -36,7 +29,7 @@ except FileNotFoundError:
     st.session_state.pop("active_file_id", None)
     save_state()
 
-    st.warning("The selected file is no longer available. Please upload a CSV file on the Home page.")
+    st.warning("The selected file is no longer available. Please upload a CSV file on the App tab.")
     st.stop()
 
 file_info = next((f for f in list_files() if f.file_id == file_id), None)
